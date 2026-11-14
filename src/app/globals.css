@@ -134,3 +134,30 @@
     cursor: pointer;
   }
 }
+
+/* Goyangan kecil pada daftar menu: main saat halaman / dibuka dan setiap kali
+   pencarian berubah (daftar diberi key baru, sehingga animasinya diulang). */
+@keyframes menu-wiggle {
+  0%,
+  100% {
+    transform: translateX(0) rotate(0);
+  }
+  20% {
+    transform: translateX(-4px) rotate(-1deg);
+  }
+  40% {
+    transform: translateX(4px) rotate(1deg);
+  }
+  60% {
+    transform: translateX(-3px) rotate(-0.5deg);
+  }
+  80% {
+    transform: translateX(2px) rotate(0.5deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .menu-wiggle {
+    animation: menu-wiggle 0.45s ease-in-out;
+  }
+}

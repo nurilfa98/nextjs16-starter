@@ -14,9 +14,10 @@
 import { SearchIcon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, type FormEvent } from "react";
+import { useLayoutEffect, useState, type FormEvent } from "react";
 import { Input } from "@/components/ui/input";
 import type { Role } from "@/lib/auth/roles";
+import { cn } from "@/lib/utils";
 import { canSeeMenu, MENU_ITEMS, type MenuItem } from "./nav-config";
 
 function matches(item: MenuItem, query: string) {
@@ -31,6 +32,20 @@ function matches(item: MenuItem, query: string) {
 export function MenuLauncher({ role }: { role: Role }) {
   const router = useRouter();
   const [query, setQuery] = useState("");
+  // Goyangan hanya saat halaman / baru dibuka. Begitu user mulai mencari, mati
+  // dan tidak dinyalakan lagi sampai halaman ini dibuka ulang.
+  const [shouldWiggle, setShouldWiggle] = useState(true);
+
+  // Next.js menyembunyikan halaman yang ditinggalkan (Activity), bukan di-unmount,
+  // sehingga state pencarian ikut tersimpan. Cleanup ini mengosongkan pencarian
+  // saat halaman disembunyikan, jadi saat kembali ke / semua menu tampil lagi
+  // dan goyangannya diputar ulang.
+  useLayoutEffect(() => {
+    return () => {
+      setQuery("");
+      setShouldWiggle(true);
+    };
+  }, []);
 
   const allowed = MENU_ITEMS.filter((item) => canSeeMenu({ role }, item));
   const visible = allowed.filter((item) => matches(item, query));
@@ -49,7 +64,10 @@ export function MenuLauncher({ role }: { role: Role }) {
           aria-label="Cari menu"
           placeholder="Cari menu, misalnya: pengguna"
           value={query}
-          onChange={(event) => setQuery(event.target.value)}
+          onChange={(event) => {
+            setQuery(event.target.value);
+            setShouldWiggle(false);
+          }}
           className="h-11 pl-9 text-base md:text-sm"
         />
       </form>
@@ -60,11 +78,16 @@ export function MenuLauncher({ role }: { role: Role }) {
         </p>
       ) : (
         <ul className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6">
-          {visible.map((item) => (
+          {/* Jeda goyangan bertahap agar kartu terlihat berurutan saat halaman dibuka. */}
+          {visible.map((item, index) => (
             <li key={item.href}>
               <Link
                 href={item.href}
-                className="group flex h-full flex-col items-center gap-2 rounded-xl border bg-card px-2 py-3 text-center transition-colors outline-none hover:border-brand/40 hover:bg-brand/5 focus-visible:ring-2 focus-visible:ring-ring"
+                style={{ animationDelay: `${index * 35}ms` }}
+                className={cn(
+                  shouldWiggle && "menu-wiggle",
+                  "group flex h-full flex-col items-center gap-2 rounded-xl border bg-card px-2 py-3 text-center transition-all duration-200 outline-none hover:-translate-y-0.5 hover:border-brand/40 hover:bg-brand/5 hover:shadow-md focus-visible:ring-2 focus-visible:ring-ring active:scale-95",
+                )}
               >
                 <span className="flex size-11 items-center justify-center rounded-xl bg-brand/10 text-brand transition-colors group-hover:bg-brand group-hover:text-brand-foreground">
                   <item.icon className="size-5" />
