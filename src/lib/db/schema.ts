@@ -103,6 +103,11 @@ export const users = pgTable(
     uniqueIndex("uq_users_email")
       .on(t.email)
       .where(sql`${t.deletedAt} IS NULL`),
+    // Hanya boleh ada SATU akun Developer aktif. Dijaga di database (bukan hanya
+    // di skrip) supaya tidak bisa terbentuk dua akun lewat jalur mana pun.
+    uniqueIndex("uq_users_role_developer")
+      .on(t.role)
+      .where(sql`${t.role} = 'DEVELOPER' AND ${t.deletedAt} IS NULL`),
     check("ck_users_role", sql.raw(`"role" IN (${ROLES.map((role) => `'${role}'`).join(", ")})`)),
   ],
 );

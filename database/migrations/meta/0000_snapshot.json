@@ -1,5 +1,5 @@
 {
-  "id": "59502513-e108-4f3c-8ff3-836cf880ea6c",
+  "id": "ef8b2399-7af6-4e84-a8f6-382eac6ddca3",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -767,6 +767,22 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
+        },
+        "uq_users_role_developer": {
+          "name": "uq_users_role_developer",
+          "columns": [
+            {
+              "expression": "role",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"users\".\"role\" = 'DEVELOPER' AND \"users\".\"deleted_at\" IS NULL",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
       "foreignKeys": {
@@ -816,7 +832,7 @@
       "checkConstraints": {
         "ck_users_role": {
           "name": "ck_users_role",
-          "value": "\"role\" IN ('ADMIN', 'USER')"
+          "value": "\"role\" IN ('DEVELOPER', 'ADMIN', 'USER')"
         }
       },
       "isRLSEnabled": false

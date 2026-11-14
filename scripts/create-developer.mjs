@@ -1,7 +1,8 @@
 // Membuat akun DEVELOPER, karena belum ada halaman register. Role ini
 // tersembunyi: akunnya tidak tampil ke pengguna lain dan tindakannya tidak
 // dicatat di audit log. Akun Developer juga tidak bisa dibuat atau diubah dari
-// UI, jadi script ini satu-satunya jalan untuk membuatnya.
+// UI, jadi script ini satu-satunya jalan untuk membuatnya. Hanya boleh ada SATU
+// akun Developer; script menolak membuat yang kedua.
 //
 // Cara pakai (jalankan setelah pnpm db:migrate):
 //   pnpm db:create-developer dev@contoh.com passwordRahasia "Nama Developer"
@@ -35,10 +36,17 @@ const sql = postgres(process.env.DATABASE_URL);
 try {
   const normalizedEmail = email.trim().toLowerCase();
 
+  // Hanya boleh ada satu akun Developer (dijaga juga oleh uq_users_role_developer).
+  const [developer] = await sql`
+    select id from users where role = 'DEVELOPER' and deleted_at is null limit 1`;
+
   // Email milik user yang sudah dihapus (deleted_at terisi) boleh dipakai lagi.
   const [existing] = await sql`
     select id from users where email = ${normalizedEmail} and deleted_at is null limit 1`;
-  if (existing) {
+  if (developer) {
+    console.error("Akun Developer sudah ada. Hanya satu akun Developer yang diizinkan.");
+    process.exitCode = 1;
+  } else if (existing) {
     console.error(`Email ${normalizedEmail} sudah terdaftar.`);
     process.exitCode = 1;
   } else {

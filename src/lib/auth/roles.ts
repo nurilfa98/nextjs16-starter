@@ -9,9 +9,9 @@
 // (2) atur haknya di lib/auth/permissions.ts, (3) `pnpm db:generate` supaya
 // CHECK constraint users.role ikut diperbarui.
 //
-// DEVELOPER = akun teknis untuk developer. TERSEMBUNYI: tidak tampil di daftar,
-// detail, atau filter pengguna milik role lain, dan tindakannya tidak dicatat di
-// audit log. Dibuat hanya lewat terminal (pnpm db:create-developer).
+// DEVELOPER = akun pribadi developer, hanya SATU (dijaga index database). TERSEMBUNYI:
+// tidak tampil di daftar, detail, atau filter pengguna lain, dan aktivitasnya tidak
+// dicatat di audit log. Dibuat hanya lewat terminal (pnpm db:create-developer).
 // ADMIN     = pengelola pengguna: kelola akun & lihat audit log. Tidak melihat
 // error log dan tidak melihat akun Developer.
 // USER      = pengguna biasa: hanya mengelola akunnya sendiri (Profil).

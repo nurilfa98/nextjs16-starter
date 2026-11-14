@@ -59,7 +59,7 @@ async function UsersContent({ searchParams }: Pick<PageProps<"/users">, "searchP
   const parsed = parseUserFilters(await searchParams);
   // Daftar "Terhapus" hanya untuk pengelola.
   const filters = { ...parsed, deleted: parsed.deleted && canManage };
-  const users = await listUsers(filters, actor.role);
+  const users = await listUsers(filters);
 
   return (
     <div className="flex flex-col gap-4">

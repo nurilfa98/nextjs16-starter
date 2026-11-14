@@ -17,7 +17,7 @@
 // Referensi: https://orm.drizzle.team/docs/transactions
 
 import "server-only";
-import { eq } from "drizzle-orm";
+import { inArray } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { auditLogs, users } from "@/lib/db/schema";
 
@@ -51,16 +51,18 @@ type AuditEntry = {
 // Tipe `tx` di dalam db.transaction(async (tx) => ...)
 type Transaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
 
-// Tindakan akun DEVELOPER tidak dicatat sama sekali (permintaan: aktivitas
-// developer tersembunyi dari pengelola). Pengecekan di sini, bukan di setiap
-// pemanggil, supaya tidak ada aksi yang terlewat. Log kegagalan login
-// (userId null, pelaku belum login) tetap dicatat.
+// Aktivitas akun DEVELOPER tidak dicatat sama sekali: tidak ketika developer
+// yang melakukan aksi (pelaku), dan tidak ketika akun developer yang menjadi
+// sasaran aksi (misalnya percobaan login ke akun itu, entityId = akun developer).
+// Pengecekan di sini, bukan di setiap pemanggil, supaya tidak ada yang terlewat.
 export async function logAudit(entry: AuditEntry, tx: typeof db | Transaction = db) {
-  if (entry.userId && (await isDeveloper(entry.userId, tx))) return;
+  if (await involvesDeveloper(entry, tx)) return;
   await tx.insert(auditLogs).values(entry);
 }
 
-async function isDeveloper(userId: string, tx: typeof db | Transaction) {
-  const [actor] = await tx.select({ role: users.role }).from(users).where(eq(users.id, userId)).limit(1);
-  return actor?.role === "DEVELOPER";
+async function involvesDeveloper(entry: AuditEntry, tx: typeof db | Transaction) {
+  const ids = [entry.userId, entry.entityName === "users" ? entry.entityId : null].filter((id): id is string => !!id);
+  if (ids.length === 0) return false;
+  const rows = await tx.select({ role: users.role }).from(users).where(inArray(users.id, ids));
+  return rows.some((row) => row.role === "DEVELOPER");
 }

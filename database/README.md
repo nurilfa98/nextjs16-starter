@@ -49,7 +49,7 @@ Aturan penamaan tabel/kolom/index dan soft delete ada di
 
 | File | Isi |
 | --- | --- |
-| `0000_init` | Tabel bawaan starter: `users`, `sessions`, `login_attempts`, `audit_logs`, `error_logs`, `notifications`. |
+| `0000_init` | Tabel bawaan starter: `users`, `sessions`, `login_attempts`, `audit_logs`, `error_logs`, `notifications`. Role `DEVELOPER`/`ADMIN`/`USER`, dan index unik yang memastikan hanya ada satu akun Developer aktif. |
 
 ### Database baru
 

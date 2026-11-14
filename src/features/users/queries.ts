@@ -66,16 +66,14 @@ const listColumns = {
   deletedByRole: deleter.role,
 };
 
-// Akun DEVELOPER tersembunyi: bagi viewer selain DEVELOPER, baris itu seolah
-// tidak ada (daftar, detail, dan nama "Dihapus oleh" dikosongkan). `viewer`
-// null berarti tanpa pembatasan (hanya untuk akun sendiri).
-function hideDevelopers(viewer: Role | null) {
-  return viewer && viewer !== "DEVELOPER" ? ne(users.role, "DEVELOPER") : undefined;
-}
+// Akun DEVELOPER bersifat privat: TIDAK ikut daftar maupun detail pengguna, untuk
+// siapa pun (termasuk developer sendiri). Profil pribadi developer tetap bisa
+// dibuka lewat getOwnProfile(). Nama penghapus yang developer juga disamarkan.
+const hideDevelopers = ne(users.role, "DEVELOPER");
 
 // Filter role, status, dan tab "Terhapus" dari URL (halaman /users). Pencarian
 // nama/email berjalan di browser (components/data-table), jadi tidak di sini.
-export async function listUsers(filters: UserFilters, viewer: Role): Promise<UserListItem[]> {
+export async function listUsers(filters: UserFilters): Promise<UserListItem[]> {
   await io();
 
   const rows = await db
@@ -85,7 +83,7 @@ export async function listUsers(filters: UserFilters, viewer: Role): Promise<Use
     .where(
       and(
         filters.deleted ? isNotNull(users.deletedAt) : notDeleted(users),
-        hideDevelopers(viewer),
+        hideDevelopers,
         filters.role ? eq(users.role, filters.role) : undefined,
         // Status akun tidak bermakna untuk pengguna yang sudah dihapus.
         filters.status && !filters.deleted ? statusCondition(filters.status) : undefined,
@@ -93,38 +91,32 @@ export async function listUsers(filters: UserFilters, viewer: Role): Promise<Use
     )
     .orderBy(filters.deleted ? desc(users.deletedAt) : asc(users.fullName));
 
-  return rows.flatMap((row) => toListItem(row, viewer));
+  return rows.flatMap(toListItem);
 }
 
 // Satu pengguna. `deleted: true` mencari di antara pengguna yang sudah dihapus
 // (dipakai halaman detail untuk menawarkan "Pulihkan").
-export async function getUserDetail(
-  id: string,
-  viewer: Role,
-  options: { deleted?: boolean } = {},
-): Promise<UserDetail | null> {
+export async function getUserDetail(id: string, options: { deleted?: boolean } = {}): Promise<UserDetail | null> {
   return findUserDetail(
-    and(eq(users.id, id), options.deleted ? isNotNull(users.deletedAt) : notDeleted(users)),
-    viewer,
+    and(eq(users.id, id), hideDevelopers, options.deleted ? isNotNull(users.deletedAt) : notDeleted(users)),
   );
 }
 
-// Akun milik sendiri (halaman & action Profil). Tidak memakai pembatasan
-// tampilan karena akun sendiri selalu boleh dilihat.
+// Akun milik sendiri (halaman & action Profil). Boleh juga untuk akun developer.
 export async function getOwnProfile(userId: string): Promise<UserDetail | null> {
-  return findUserDetail(and(eq(users.id, userId), notDeleted(users)), null);
+  return findUserDetail(and(eq(users.id, userId), notDeleted(users)));
 }
 
-async function findUserDetail(where: SQL | undefined, viewer: Role | null): Promise<UserDetail | null> {
+async function findUserDetail(where: SQL | undefined): Promise<UserDetail | null> {
   await io();
   const [row] = await db
     .select({ ...listColumns, createdAt: users.createdAt })
     .from(users)
     .leftJoin(deleter, eq(users.deletedBy, deleter.id))
-    .where(and(where, hideDevelopers(viewer)))
+    .where(where)
     .limit(1);
 
-  const [item] = row ? toListItem(row, viewer) : [];
+  const [item] = row ? toListItem(row) : [];
   return item && row ? { ...item, createdAt: row.createdAt } : null;
 }
 
@@ -136,10 +128,10 @@ type ListRow = Omit<UserListItem, "role" | "deletedByName"> & {
 
 // Baris dengan role yang tidak dikenal (data rusak) dilewati, bukan error:
 // CHECK constraint di database seharusnya mencegahnya. Nama penghapus yang
-// berrole DEVELOPER disamarkan untuk viewer selain DEVELOPER.
-function toListItem(row: ListRow, viewer: Role | null): UserListItem[] {
+// berrole DEVELOPER disamarkan karena akun itu privat.
+function toListItem(row: ListRow): UserListItem[] {
   if (!isRole(row.role)) return [];
-  const hideDeleter = row.deletedByRole === "DEVELOPER" && viewer !== "DEVELOPER";
+  const hideDeleter = row.deletedByRole === "DEVELOPER";
   return [
     {
       id: row.id,

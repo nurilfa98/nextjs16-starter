@@ -48,10 +48,10 @@ async function UserDetailContent({ id }: { id: string }) {
   const actor = await requirePermission("user:view");
   const canManage = can(actor, "user:manage");
 
-  const user = await getUserDetail(id, actor.role);
+  const user = await getUserDetail(id);
   if (!user) {
     // Bukan pengguna aktif: mungkin sudah dihapus (hanya terlihat oleh pengelola).
-    const deletedUser = canManage ? await getUserDetail(id, actor.role, { deleted: true }) : null;
+    const deletedUser = canManage ? await getUserDetail(id, { deleted: true }) : null;
     if (!deletedUser) notFound();
 
     return (

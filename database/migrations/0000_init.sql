@@ -83,7 +83,7 @@ CREATE TABLE "users" (
 	"updated_by" varchar(36),
 	"deleted_at" timestamp with time zone,
 	"deleted_by" varchar(36),
-	CONSTRAINT "ck_users_role" CHECK ("role" IN ('ADMIN', 'USER'))
+	CONSTRAINT "ck_users_role" CHECK ("role" IN ('DEVELOPER', 'ADMIN', 'USER'))
 );
 --> statement-breakpoint
 ALTER TABLE "audit_logs" ADD CONSTRAINT "audit_logs_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
@@ -103,4 +103,5 @@ CREATE INDEX "idx_login_attempts_ip_address_created_at" ON "login_attempts" USIN
 CREATE INDEX "idx_notifications_user_id_read_at_created_at" ON "notifications" USING btree ("user_id","read_at","created_at");--> statement-breakpoint
 CREATE INDEX "idx_sessions_user_id_created_at" ON "sessions" USING btree ("user_id","created_at");--> statement-breakpoint
 CREATE INDEX "idx_sessions_expires_at" ON "sessions" USING btree ("expires_at");--> statement-breakpoint
-CREATE UNIQUE INDEX "uq_users_email" ON "users" USING btree ("email") WHERE "users"."deleted_at" IS NULL;
+CREATE UNIQUE INDEX "uq_users_email" ON "users" USING btree ("email") WHERE "users"."deleted_at" IS NULL;--> statement-breakpoint
+CREATE UNIQUE INDEX "uq_users_role_developer" ON "users" USING btree ("role") WHERE "users"."role" = 'DEVELOPER' AND "users"."deleted_at" IS NULL;
