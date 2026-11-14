@@ -10,7 +10,7 @@
     "typecheck": "next typegen && tsc --noEmit",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "db:create-admin": "node scripts/create-admin.mjs",
+    "db:create-developer": "node scripts/create-developer.mjs",
     "icons:generate": "node scripts/generate-app-icons.mjs",
     "release:reset": "node scripts/reset-release.mjs",
     "prepare": "husky"

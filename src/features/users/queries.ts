@@ -22,7 +22,7 @@
 // - node_modules/next/dist/docs/01-app/02-guides/data-security.md
 
 import "server-only";
-import { and, asc, desc, eq, isNotNull, not, type SQL } from "drizzle-orm";
+import { and, asc, desc, eq, isNotNull, ne, not, type SQL } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import { io } from "next/cache";
 import { isRole, type Role } from "@/lib/auth/roles";
@@ -63,11 +63,19 @@ const listColumns = {
   mustChangePassword: users.mustChangePassword,
   deletedAt: users.deletedAt,
   deletedByName: deleter.fullName,
+  deletedByRole: deleter.role,
 };
+
+// Akun DEVELOPER tersembunyi: bagi viewer selain DEVELOPER, baris itu seolah
+// tidak ada (daftar, detail, dan nama "Dihapus oleh" dikosongkan). `viewer`
+// null berarti tanpa pembatasan (hanya untuk akun sendiri).
+function hideDevelopers(viewer: Role | null) {
+  return viewer && viewer !== "DEVELOPER" ? ne(users.role, "DEVELOPER") : undefined;
+}
 
 // Filter role, status, dan tab "Terhapus" dari URL (halaman /users). Pencarian
 // nama/email berjalan di browser (components/data-table), jadi tidak di sini.
-export async function listUsers(filters: UserFilters): Promise<UserListItem[]> {
+export async function listUsers(filters: UserFilters, viewer: Role): Promise<UserListItem[]> {
   await io();
 
   const rows = await db
@@ -77,6 +85,7 @@ export async function listUsers(filters: UserFilters): Promise<UserListItem[]> {
     .where(
       and(
         filters.deleted ? isNotNull(users.deletedAt) : notDeleted(users),
+        hideDevelopers(viewer),
         filters.role ? eq(users.role, filters.role) : undefined,
         // Status akun tidak bermakna untuk pengguna yang sudah dihapus.
         filters.status && !filters.deleted ? statusCondition(filters.status) : undefined,
@@ -84,37 +93,66 @@ export async function listUsers(filters: UserFilters): Promise<UserListItem[]> {
     )
     .orderBy(filters.deleted ? desc(users.deletedAt) : asc(users.fullName));
 
-  return rows.flatMap(toListItem);
+  return rows.flatMap((row) => toListItem(row, viewer));
 }
 
 // Satu pengguna. `deleted: true` mencari di antara pengguna yang sudah dihapus
 // (dipakai halaman detail untuk menawarkan "Pulihkan").
-export async function getUserDetail(id: string, options: { deleted?: boolean } = {}): Promise<UserDetail | null> {
-  return findUserDetail(and(eq(users.id, id), options.deleted ? isNotNull(users.deletedAt) : notDeleted(users)));
+export async function getUserDetail(
+  id: string,
+  viewer: Role,
+  options: { deleted?: boolean } = {},
+): Promise<UserDetail | null> {
+  return findUserDetail(
+    and(eq(users.id, id), options.deleted ? isNotNull(users.deletedAt) : notDeleted(users)),
+    viewer,
+  );
 }
 
-// Akun milik sendiri (halaman & action Profil).
+// Akun milik sendiri (halaman & action Profil). Tidak memakai pembatasan
+// tampilan karena akun sendiri selalu boleh dilihat.
 export async function getOwnProfile(userId: string): Promise<UserDetail | null> {
-  return findUserDetail(and(eq(users.id, userId), notDeleted(users)));
+  return findUserDetail(and(eq(users.id, userId), notDeleted(users)), null);
 }
 
-async function findUserDetail(where: SQL | undefined): Promise<UserDetail | null> {
+async function findUserDetail(where: SQL | undefined, viewer: Role | null): Promise<UserDetail | null> {
   await io();
   const [row] = await db
     .select({ ...listColumns, createdAt: users.createdAt })
     .from(users)
     .leftJoin(deleter, eq(users.deletedBy, deleter.id))
-    .where(where)
+    .where(and(where, hideDevelopers(viewer)))
     .limit(1);
 
-  const [item] = row ? toListItem(row) : [];
+  const [item] = row ? toListItem(row, viewer) : [];
   return item && row ? { ...item, createdAt: row.createdAt } : null;
 }
 
+type ListRow = Omit<UserListItem, "role" | "deletedByName"> & {
+  role: string;
+  deletedByName: string | null;
+  deletedByRole: string | null;
+};
+
 // Baris dengan role yang tidak dikenal (data rusak) dilewati, bukan error:
-// CHECK constraint di database seharusnya mencegahnya.
-function toListItem(row: Omit<UserListItem, "role"> & { role: string }): UserListItem[] {
-  return isRole(row.role) ? [{ ...row, role: row.role }] : [];
+// CHECK constraint di database seharusnya mencegahnya. Nama penghapus yang
+// berrole DEVELOPER disamarkan untuk viewer selain DEVELOPER.
+function toListItem(row: ListRow, viewer: Role | null): UserListItem[] {
+  if (!isRole(row.role)) return [];
+  const hideDeleter = row.deletedByRole === "DEVELOPER" && viewer !== "DEVELOPER";
+  return [
+    {
+      id: row.id,
+      fullName: row.fullName,
+      email: row.email,
+      phoneNumber: row.phoneNumber,
+      role: row.role,
+      isActive: row.isActive,
+      mustChangePassword: row.mustChangePassword,
+      deletedAt: row.deletedAt,
+      deletedByName: hideDeleter ? null : row.deletedByName,
+    },
+  ];
 }
 
 // Sama dengan urutan StatusBadge (user-badges.tsx): nonaktif menang atas

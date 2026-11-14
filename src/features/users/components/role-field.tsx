@@ -2,9 +2,10 @@
 
 import { OptionSelect } from "@/components/option-select";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
-import { ROLE_LABELS, ROLES, type Role } from "@/lib/auth/roles";
+import { ASSIGNABLE_ROLES, ROLE_LABELS, type Role } from "@/lib/auth/roles";
 
-const ROLE_OPTIONS = ROLES.map((role) => ({ value: role, label: ROLE_LABELS[role] }));
+// Developer tidak ditawarkan di form (akunnya dibuat lewat terminal).
+const ROLE_OPTIONS = ASSIGNABLE_ROLES.map((role) => ({ value: role, label: ROLE_LABELS[role] }));
 
 export function RoleField({ defaultValue, error }: { defaultValue?: Role; error?: string }) {
   return (

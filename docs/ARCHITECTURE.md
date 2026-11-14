@@ -11,7 +11,7 @@ Aturan penamaan, database, komponen, dan commit ada di [CONVENTIONS.md](./CONVEN
 ├── database/migrations/       # migration SQL hasil drizzle-kit (lihat database/README.md)
 ├── docs/                      # dokumentasi seperti file ini
 ├── public/                    # file statis (ikon PWA)
-├── scripts/                   # script CLI: create-admin, generate-app-icons, reset-release
+├── scripts/                   # script CLI: create-developer, generate-app-icons, reset-release
 ├── src/
 │   ├── app/                   # ROUTING SAJA — tipis, tidak ada logika bisnis
 │   │   ├── (login)/login/page.tsx          # login: info + form di PC, form saja di HP

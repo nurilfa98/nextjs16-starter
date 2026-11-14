@@ -51,6 +51,12 @@ import { hasOtherActiveAdmin } from "./service";
 
 const FORBIDDEN = { success: false, message: "Anda tidak memiliki akses." } as const;
 const NOT_FOUND = { success: false, message: "Pengguna tidak ditemukan." } as const;
+// Akun DEVELOPER hanya dikelola lewat terminal (pnpm db:create-developer), jadi
+// tidak bisa diubah, dinonaktifkan, dihapus, atau di-reset dari UI.
+const DEVELOPER_LOCKED = {
+  success: false,
+  message: "Akun Developer hanya bisa dikelola lewat terminal.",
+} as const;
 const LAST_ADMIN = {
   success: false,
   message: "Aplikasi harus memiliki minimal satu administrator aktif.",
@@ -145,8 +151,9 @@ export async function updateUser(_prevState: ActionResult | undefined, formData:
   const actor = await getUserManager();
   if (!actor) return FORBIDDEN;
 
-  const before = await getUserDetail(userId.data);
+  const before = await getUserDetail(userId.data, actor.role);
   if (!before) return NOT_FOUND;
+  if (before.role === "DEVELOPER") return DEVELOPER_LOCKED;
   // Akun sendiri diubah lewat menu Profil: role sendiri tidak boleh diturunkan.
   if (before.id === actor.id) {
     return { success: false, message: "Ubah data Anda sendiri lewat menu Profil." };
@@ -282,8 +289,9 @@ export async function setUserActive(userId: string, active: boolean): Promise<Ac
   if (input.data.userId === actor.id) {
     return { success: false, message: "Anda tidak bisa menonaktifkan akun sendiri." };
   }
-  const target = await getUserDetail(input.data.userId);
+  const target = await getUserDetail(input.data.userId, actor.role);
   if (!target) return NOT_FOUND;
+  if (target.role === "DEVELOPER") return DEVELOPER_LOCKED;
 
   // Cookie session user yang dinonaktifkan masih tersimpan di browsernya,
   // tapi getCurrentUser() di DAL mengecek is_active, jadi aksesnya berhenti
@@ -338,8 +346,9 @@ export async function deleteUser(userId: string): Promise<ActionResult> {
   if (id.data === actor.id) {
     return { success: false, message: "Anda tidak bisa menghapus akun sendiri." };
   }
-  const target = await getUserDetail(id.data);
+  const target = await getUserDetail(id.data, actor.role);
   if (!target) return NOT_FOUND;
+  if (target.role === "DEVELOPER") return DEVELOPER_LOCKED;
 
   const ip = await getClientIp();
   const result = await db.transaction(async (tx) => {
@@ -380,8 +389,9 @@ export async function restoreUser(userId: string): Promise<ActionResult> {
   const actor = await getUserManager();
   if (!actor) return FORBIDDEN;
 
-  const target = await getUserDetail(id.data, { deleted: true });
+  const target = await getUserDetail(id.data, actor.role, { deleted: true });
   if (!target) return NOT_FOUND;
+  if (target.role === "DEVELOPER") return DEVELOPER_LOCKED;
 
   const ip = await getClientIp();
   try {
@@ -430,8 +440,9 @@ export async function resetUserPassword(userId: string): Promise<ActionResult> {
   if (id.data === actor.id) {
     return { success: false, message: "Untuk akun sendiri, gunakan menu Ganti password." };
   }
-  const target = await getUserDetail(id.data);
+  const target = await getUserDetail(id.data, actor.role);
   if (!target) return NOT_FOUND;
+  if (target.role === "DEVELOPER") return DEVELOPER_LOCKED;
   if (!target.isActive) {
     return { success: false, message: "Aktifkan akun ini terlebih dahulu sebelum me-reset password." };
   }

@@ -9,7 +9,7 @@
 // - node_modules/next/dist/docs/01-app/02-guides/forms.md (bagian "Form validation")
 
 import { z } from "zod";
-import { ROLES, type Role } from "@/lib/auth/roles";
+import { ASSIGNABLE_ROLES, ROLES, type Role } from "@/lib/auth/roles";
 import { normalizeIndonesianPhone } from "@/lib/phone";
 import { USER_STATUS, type UserStatus } from "./constants";
 
@@ -36,7 +36,8 @@ const phoneNumber = z
     return normalized;
   });
 
-const role = z.enum(ROLES, "Pilih role");
+// DEVELOPER tidak termasuk: role itu hanya diberikan lewat terminal.
+const role = z.enum(ASSIGNABLE_ROLES, "Pilih role");
 
 // Tambah pengguna: password sementara dibuat sistem (tidak diisi di form).
 export const createUserSchema = z.object({ fullName, email, phoneNumber, role });

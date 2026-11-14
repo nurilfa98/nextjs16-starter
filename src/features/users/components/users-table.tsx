@@ -21,7 +21,7 @@ import {
   useUrlFilters,
   type FilterOption,
 } from "@/components/data-table/data-table-filters";
-import { ROLE_LABELS, ROLES } from "@/lib/auth/roles";
+import { ASSIGNABLE_ROLES, ROLE_LABELS } from "@/lib/auth/roles";
 import { formatPhone } from "@/lib/phone";
 import { USER_STATUS, USER_STATUS_LABELS } from "../constants";
 import type { UserListItem } from "../queries";
@@ -108,7 +108,7 @@ const SEARCHABLE = ["fullName", "email"] as const;
 
 const ROLE_OPTIONS: FilterOption[] = [
   { value: FILTER_ALL, label: "Semua role" },
-  ...ROLES.map((value) => ({ value, label: ROLE_LABELS[value] })),
+  ...ASSIGNABLE_ROLES.map((value) => ({ value, label: ROLE_LABELS[value] })),
 ];
 
 const STATUS_OPTIONS: FilterOption[] = [

@@ -56,20 +56,6 @@ export const MENU_ITEMS: MenuItem[] = [
     keywords: ["error", "bug", "masalah", "kesalahan"],
     permission: "error-log:view",
   },
-  {
-    title: "Notifikasi",
-    description: "Kabar terbaru untuk Anda",
-    href: "/notifications",
-    icon: BellIcon,
-    keywords: ["pemberitahuan", "lonceng", "kabar", "pesan"],
-  },
-  {
-    title: "Profil",
-    description: "Data diri, password & perangkat",
-    href: "/profile",
-    icon: UserRoundIcon,
-    keywords: ["akun", "password", "sandi", "perangkat", "sesi"],
-  },
 ];
 
 // Label tiap segmen URL untuk breadcrumb (page-breadcrumb.tsx). Segmen yang

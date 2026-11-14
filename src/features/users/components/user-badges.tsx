@@ -12,6 +12,7 @@ import type { UserListItem } from "../queries";
 // abu-abu = Nonaktif, kuning = Menunggu login), supaya tidak dikira status.
 // Pengguna biasa tetap abu-abu netral (role paling umum).
 const ROLE_COLORS: Partial<Record<Role, string>> = {
+  DEVELOPER: "border-rose-200 bg-rose-100 text-rose-700 dark:border-rose-800 dark:bg-rose-950/50 dark:text-rose-300",
   ADMIN:
     "border-violet-200 bg-violet-100 text-violet-700 dark:border-violet-800 dark:bg-violet-950/50 dark:text-violet-300",
 };

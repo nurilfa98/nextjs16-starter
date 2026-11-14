@@ -318,7 +318,7 @@ Setelah clone starter untuk proyek baru:
    (`git tag -d vX.Y.Z`).
 3. Ganti identitas di `lib/brand.ts` (nama produk, awalan cookie) dan logo.
 4. `pnpm install`, isi `.env` dari `.env.example`, `pnpm db:migrate`,
-   `pnpm db:create-admin email password "Nama"`.
+   `pnpm db:create-developer email password "Nama"`.
 
 Mengulang penomoran di tengah proyek: jalankan `pnpm release:reset [versi]`,
 hapus tag lama, lalu commit.

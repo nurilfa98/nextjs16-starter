@@ -9,11 +9,18 @@
 // (2) atur haknya di lib/auth/permissions.ts, (3) `pnpm db:generate` supaya
 // CHECK constraint users.role ikut diperbarui.
 //
-// ADMIN = pengelola aplikasi: kelola pengguna, lihat audit log & error log.
-// USER  = pengguna biasa: hanya mengelola akunnya sendiri (Profil).
-export const ROLES = ["ADMIN", "USER"] as const;
+// DEVELOPER = akun teknis untuk developer. TERSEMBUNYI: tidak tampil di daftar,
+// detail, atau filter pengguna milik role lain, dan tindakannya tidak dicatat di
+// audit log. Dibuat hanya lewat terminal (pnpm db:create-developer).
+// ADMIN     = pengelola pengguna: kelola akun & lihat audit log. Tidak melihat
+// error log dan tidak melihat akun Developer.
+// USER      = pengguna biasa: hanya mengelola akunnya sendiri (Profil).
+export const ROLES = ["DEVELOPER", "ADMIN", "USER"] as const;
 
 export type Role = (typeof ROLES)[number];
+
+// Role yang boleh dipilih dari form di UI. DEVELOPER sengaja tidak termasuk.
+export const ASSIGNABLE_ROLES = ["ADMIN", "USER"] as const satisfies readonly Role[];
 
 export function isRole(value: string): value is Role {
   return (ROLES as readonly string[]).includes(value);
@@ -21,6 +28,7 @@ export function isRole(value: string): value is Role {
 
 // Nama role yang tampil di UI. Kode tetap memakai nilai aslinya (ADMIN, dst).
 export const ROLE_LABELS: Record<Role, string> = {
+  DEVELOPER: "Developer",
   ADMIN: "Administrator",
   USER: "Pengguna",
 };

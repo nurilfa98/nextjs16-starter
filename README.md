@@ -37,11 +37,11 @@ Prasyarat: Node.js 22 (lihat `.nvmrc`), pnpm 9, dan database PostgreSQL.
 3. Salin `.env.example` menjadi `.env`, isi minimal `DATABASE_URL` dan
    `SESSION_SECRET` (cara generate ada di file tersebut).
 
-4. Buat tabel dan akun admin pertama:
+4. Buat tabel dan akun developer pertama:
 
    ```bash
    pnpm db:migrate
-   pnpm db:create-admin admin@example.com passwordRahasia "Nama Admin"
+   pnpm db:create-developer dev@example.com passwordRahasia "Nama Developer"
    ```
 
 5. Jalankan aplikasi, lalu buka [http://localhost:3000](http://localhost:3000):
@@ -75,7 +75,7 @@ curl -H "Authorization: Bearer <CRON_SECRET>" http://localhost:3000/api/cron/cle
 | `pnpm lint` | Cek kode dengan ESLint |
 | `pnpm db:generate` | Buat file migration baru setelah mengubah `src/lib/db/schema.ts` |
 | `pnpm db:migrate` | Jalankan migration ke database |
-| `pnpm db:create-admin` | Buat akun admin |
+| `pnpm db:create-developer` | Buat akun Developer (tersembunyi) |
 | `pnpm icons:generate` | Buat ulang ikon PWA dari `src/app/icon.svg` |
 | `pnpm release:reset` | Kembalikan versi & changelog ke awal |
 
@@ -103,4 +103,4 @@ tidak menaikkan versi. Detail di
 Config `vercel.json` memakai region `sin1` (Singapura) dan menjadwalkan
 `/api/cron/cleanup` setiap hari pukul 02.00 WIB; ubah sesuai kebutuhan. Hosting
 lain memanggil URL itu dengan crontab (contoh di `.env.example`). Isi semua environment variable dari `.env.example` di hosting, jalankan
-`pnpm db:migrate` ke database production, lalu `pnpm db:create-admin`.
+`pnpm db:migrate` ke database production, lalu `pnpm db:create-developer`.

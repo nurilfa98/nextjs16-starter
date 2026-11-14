@@ -42,8 +42,8 @@ Aturan penamaan tabel/kolom/index dan soft delete ada di
 
 - **Jangan mengubah, mengganti nama, atau menghapus migration yang sudah dijalankan** di database mana pun (terutama production). drizzle-kit mencatat migration yang sudah dijalankan di tabel `drizzle.__drizzle_migrations`; perubahan berikutnya selalu dibuat sebagai migration baru.
 - Jangan menyunting `meta/` secara manual. File di sana dibuat dan dibaca drizzle-kit.
-- Migration hanya membuat struktur tabel. Akun admin pertama dibuat lewat
-  `pnpm db:create-admin` (lihat `scripts/create-admin.mjs`).
+- Migration hanya membuat struktur tabel. Akun developer pertama dibuat lewat
+  `pnpm db:create-developer` (lihat `scripts/create-developer.mjs`).
 
 ## Riwayat migration
 
@@ -55,5 +55,5 @@ Aturan penamaan tabel/kolom/index dan soft delete ada di
 
 ```bash
 pnpm db:migrate
-pnpm db:create-admin admin@example.com passwordRahasia "Nama Admin"
+pnpm db:create-developer dev@example.com passwordRahasia "Nama Developer"
 ```

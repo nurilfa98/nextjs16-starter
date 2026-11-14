@@ -31,8 +31,11 @@ export const PERMISSIONS = [
 export type Permission = (typeof PERMISSIONS)[number];
 
 // `satisfies` memastikan setiap role terdaftar dan setiap permission valid.
+// DEVELOPER punya semua hak, termasuk error log. ADMIN tidak punya error-log:*,
+// sehingga menu Log Error hanya muncul untuk Developer.
 const ROLE_PERMISSIONS = {
-  ADMIN: PERMISSIONS,
+  DEVELOPER: PERMISSIONS,
+  ADMIN: ["user:view", "user:manage", "audit:view"],
   USER: [],
 } satisfies Record<Role, readonly Permission[]>;
 
