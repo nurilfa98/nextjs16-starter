@@ -20,6 +20,15 @@ Cukup clone repo ini, ganti identitas, lalu mulai membuat fitur.
 
 Prasyarat: Node.js 22 (lihat `.nvmrc`), pnpm 9, dan database PostgreSQL.
 
+> **Dengan Claude Code:** setelah repo disalin, jalankan `claude` di foldernya.
+> Claude membaca `CLAUDE.md`, lalu menawarkan dua mode: wawancara cepat (aplikasi
+> apa, role, perlu `docs/BUSINESS-FLOW.md` atau tidak) atau **diskusi menyusun
+> alur bisnis dari cerita operasional klien** sebelum development. Setelah itu ia
+> mengganti identitas dan menulis ulang `CLAUDE.md` sehingga tidak lagi berstatus
+> starter. Prosedurnya ada di
+> [docs/ONBOARDING.md](docs/ONBOARDING.md). Langkah manual di bawah tetap berlaku
+> bila tidak memakai Claude.
+
 1. Clone repo, lalu ganti `name` di `package.json` dan jalankan:
 
    ```bash
@@ -83,6 +92,7 @@ curl -H "Authorization: Bearer <CRON_SECRET>" http://localhost:3000/api/cron/cle
 
 - [docs/CONVENTIONS.md](docs/CONVENTIONS.md): standar penamaan, database & soft delete, komponen reusable, layout PWA, commit & rilis.
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md): struktur folder, alur data, dan keamanan.
+- [docs/ONBOARDING.md](docs/ONBOARDING.md): prosedur inisialisasi proyek baru oleh Claude (dihapus setelah selesai).
 - [database/README.md](database/README.md): cara mengubah struktur database dan riwayat migration.
 - [CLAUDE.md](CLAUDE.md): ringkasan aturan untuk Claude Code.
 

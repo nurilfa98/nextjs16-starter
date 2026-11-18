@@ -1,5 +1,21 @@
 # Panduan untuk Claude
 
+<!-- BEGIN:starter-onboarding -->
+## ⚠️ Proyek ini belum diinisialisasi (masih berisi template starter)
+
+**Sebelum mengerjakan permintaan user apa pun**, baca
+[docs/ONBOARDING.md](docs/ONBOARDING.md) dan jalankan prosedurnya: tanyakan
+aplikasi apa yang akan dibuat (atau diskusi menyusun alur bisnis dari cerita
+operasional klien), putuskan perlu-tidaknya `docs/BUSINESS-FLOW.md`, ganti
+identitas, lalu tulis ulang file ini (blok ini ikut dihapus). Bila
+`docs/BUSINESS-FLOW.md` sudah ada tetapi blok ini masih ada, diskusi belum selesai:
+lanjutkan, jangan mulai dari awal.
+
+Lewati bila `git remote get-url origin` mengarah ke `nurilfa98/nextjs16-starter`
+**dan** `name` di `package.json` masih `nextjs16-starter` (sedang mengembangkan
+starter-nya sendiri), atau bila user meminta melewatinya.
+<!-- END:starter-onboarding -->
+
 Starter template web app Next.js 16 (App Router, React 19, TypeScript, Tailwind v4,
 shadcn/ui, PostgreSQL + Drizzle, iron-session). **Wajib** membaca dua dokumen
 berikut sebelum menulis atau mengubah kode, dan mengikutinya:
